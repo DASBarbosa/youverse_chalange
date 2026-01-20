@@ -1,3 +1,5 @@
+annotated-types==0.7.0
+asarPy==1.0.1
 coloredlogs==15.0.1
 flatbuffers==25.12.19
 humanfriendly==10.0
@@ -6,4 +8,9 @@ numpy==2.4.1
 onnxruntime==1.23.2
 packaging==25.0
 protobuf==6.33.4
+pydantic==2.12.5
+pydantic_core==2.41.5
+python-stdnum==2.2
 sympy==1.14.0
+typing-inspection==0.4.2
+typing_extensions==4.15.0
