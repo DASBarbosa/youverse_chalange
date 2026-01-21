@@ -76,5 +76,6 @@ def create_img_loader(loader_type: ImgLoaderTypes) -> ImageLoader:
         raise ValueError(f"Unsupported image loader: {loader_type}")
 
 if __name__ == "__main__" :
+    img_path="/home/dubas/Pictures/tigercat.jpg"
     ocv_loader = create_img_loader(ImgLoaderTypes.OcvLoader)
-    ocv_loader.load_and_normalize(img_path="/home/dubas/Pictures/tigercat.jpg")
+    ocv_loader.load_and_normalize(img_path=img_path)
