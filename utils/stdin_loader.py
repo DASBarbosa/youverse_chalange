@@ -1,7 +1,6 @@
 import sys
 
 def read_stdin() -> str:
-    print (len(sys.argv))
     if len(sys.argv) < 2:
         raise ValueError("Please provide a path to your image")
         sys.exit(1)

@@ -13,4 +13,11 @@ if __name__ == "__main__":
     img_normalized = ocv_loader.load_and_normalize(img_path=img_path)
 
     model_loader = ModelLoader()
-    model_loader.run_prediction(input_data=img_normalized)
+    model_response = model_loader.run_prediction(input_data=img_normalized)
+
+    # top 5 example
+    top5_predict = model_response.predictions[:5]
+    for prediction in top5_predict:
+        print(f"Label: {prediction.label}")
+        print(f"Confidence: {prediction.confidence}")
+    print(f"Inference time: {model_response.inference_time_ms} ms")
