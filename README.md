@@ -17,3 +17,5 @@ The packages that were manualy installed with pip were the following, the rest a
 - black: installed just to help with formating
 - cv2: used to load the images locally for the initial tests with the model
 - fastapi: The selected framework to build a puthon api
+- python-multipart: required to run the api
+- uvicorn: required to run the api
