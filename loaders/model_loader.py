@@ -23,6 +23,8 @@ class ModelResponse(BaseModel):
 
 class ModelLoader:
     def __init__(self):
+        #The paths are hardcoded as relative paths for this example, but idialy they would be specified
+        # In a settings object
         # Load ONNX model
         self.ort_session = ort.InferenceSession("resnet50.onnx")
         # Load labels
