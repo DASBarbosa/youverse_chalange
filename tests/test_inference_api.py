@@ -1,13 +1,20 @@
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from apis.inference_api import InferenceAPI
+from apis.inference_api import InferenceAPI,InferenceApiSettings
 import pytest
 
 
 @pytest.fixture
 def mock_app() -> FastAPI:
     app = FastAPI()
-    InferenceAPI(app=app, img_loader_type=None, model_loader_type=None)
+    api_Settings = InferenceApiSettings(
+        IMAGE_LOADER_TYPE = None,
+        MODEL_LOADER_TYPE = None,
+        MODEL_PATH = "",
+        TOP_K = 1,
+        NUM_THREADS = 1
+    )
+    InferenceAPI(app=app, api_settings=api_Settings)
     return app
 
 

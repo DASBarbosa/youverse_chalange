@@ -2,18 +2,25 @@ from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.responses import JSONResponse
 from loaders.image_loader import ImgLoaderTypes, create_img_loader
 from loaders.model_loader import ModelLoaderTypes, ModelResponse, create_model_loader
+from pydantic_settings import BaseSettings
 
+# Base settings are pretty handy, not only they will load these variables from env variables
+# if available, but they also make test easier, since you can just inject a settings object
+class InferenceApiSettings(BaseSettings):
+    IMAGE_LOADER_TYPE: ImgLoaderTypes | None
+    MODEL_LOADER_TYPE: ModelLoaderTypes | None
+    MODEL_PATH:str
+    TOP_K:int
+    NUM_THREADS:int
 
 class InferenceAPI:
     def __init__(
         self,
         app: FastAPI,
-        img_loader_type: ImgLoaderTypes | None,
-        model_loader_type: ModelLoaderTypes | None,
+        api_settings: InferenceApiSettings,
     ):
         self.app = app
-        self._img_loader_type = img_loader_type
-        self._model_loader_type = model_loader_type
+        self._settings = api_settings
         self.model_ready: bool = False
         self.loading_error: str | None = None
         self._register_routes()
@@ -26,14 +33,14 @@ class InferenceAPI:
     def on_startup(self):
         # On startup will load the model and img loaders at startup tipe
         # if there is anything wrong with any of them, will set model_ready to false
-        if self._img_loader_type == None or self._model_loader_type == None:
+        if self._settings.IMAGE_LOADER_TYPE == None or self._settings.MODEL_LOADER_TYPE == None:
             self.model_ready = False
             self.loading_error = "no loader for model or image was provided"
             return
         try:
-            self.image_loader = create_img_loader(loader_type=self._img_loader_type)
+            self.image_loader = create_img_loader(loader_type=self._settings.IMAGE_LOADER_TYPE)
             self.model_loader = create_model_loader(
-                model_loader_type=self._model_loader_type
+                model_loader_type=self._settings.MODEL_LOADER_TYPE
             )
             self.model_ready = True
         except Exception as e:
@@ -49,7 +56,6 @@ class InferenceAPI:
 
     async def infer(
         self,
-        number_of_predictions: int = Form(default=1),
         image: UploadFile = File(...),
     ) -> ModelResponse:
         image_bytes = await image.read()
@@ -58,7 +64,7 @@ class InferenceAPI:
         )
         model_response = self.model_loader.run_prediction(input_data=img_normalized)
 
-        topk_predict = model_response.predictions[:number_of_predictions]
+        topk_predict = model_response.predictions[:self._settings.TOP_K]
         for prediction in topk_predict:
             print(f"Label: {prediction.label}")
             print(f"Confidence: {prediction.confidence}")

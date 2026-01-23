@@ -14,6 +14,7 @@ The packages that were manualy installed with pip were the following, the rest a
 - numpy: numpy is the base for data that is infered by the models
 - onncruntime: the runtime requested to be used by this exercice
 - pydantinc: pydentic is a personal choice for creating data models, it's json serialization and deserialization capabilities are specially usefull when building rest api endpoints
+- pydantic-settings: for usinf BaseSetting to load env variables
 - black: installed just to help with formating
 - cv2: used to load the images locally for the initial tests with the model
 - fastapi: The selected framework to build a puthon api
@@ -24,7 +25,18 @@ The packages that were manualy installed with pip were the following, the rest a
 
 ## Running the app
 
-run the api locall on your terminal using:
+run the api localy on your terminal by first setting up the needed enviormental variables:
+
+`
+export $(grep -v '^#' api_settings.env | xargs)
+`
+
+for the above command this is what it does:
+ - grep -v '^#' .env -> ignores comment lines in your .env
+ - xargs -> converts KEY=VALUE lines into arguments for export.
+ - export $(...) -> sets all those variables in your current shell.
+
+On the same console you ran the above command, run the following to start the api:
 
 `
 uvicorn main:app --reload
@@ -32,7 +44,7 @@ uvicorn main:app --reload
 
 test the infer endpoint or your terminal using:
 
-` curl -X 'POST' 'http://127.0.0.1:8000/infer' -H 'accept: application/json' -H 'Content-Type: multipart/form-data' -F 'number_of_predictions=your_num_of_predictions_here' -F 'image=@/absolute/path/to/img.png;type=image/png'
+` curl -X 'POST' 'http://127.0.0.1:8000/infer' -H 'accept: application/json' -H 'Content-Type: multipart/form-data' -F 'image=@/absolute/path/to/img.png;type=image/png'
 `
 
 or using swagger at: http://127.0.0.1:8000/docs
