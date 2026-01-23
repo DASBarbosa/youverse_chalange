@@ -1,5 +1,5 @@
 from loaders.image_loader import create_img_loader, ImgLoaderTypes
-from loaders.model_loader import ModelLoader
+from loaders.model_loader import create_model_loader, ModelLoaderTypes
 from utils.stdin_loader import read_stdin
 
 if __name__ == "__main__":
@@ -7,11 +7,14 @@ if __name__ == "__main__":
     if len(img_path) == 0:
         raise ValueError("Image path cannot be empty")
 
-    ocv_loader = create_img_loader(ImgLoaderTypes.OcvImageLoader)
-    img_normalized = ocv_loader.load_local_img(img_path=img_path, height=224, width=224)
+    # The reason I prefer to use StrEnums for selecting the class on my factories
+    # is because we are not relient on hardcoded strings and can easily check
+    # what types of loaders are available
+    ocv_loader = create_img_loader(loader_type=ImgLoaderTypes.OcvImageLoader)
+    onnx_loader = create_model_loader(model_loader_type=ModelLoaderTypes.OnnxLoader)
 
-    model_loader = ModelLoader()
-    model_response = model_loader.run_prediction(input_data=img_normalized)
+    img_normalized = ocv_loader.load_local_img(img_path=img_path, height=224, width=224)
+    model_response = onnx_loader.run_prediction(input_data=img_normalized)
 
     # top 5 example
     top5_predict = model_response.predictions[:5]

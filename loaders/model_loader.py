@@ -3,7 +3,8 @@ import numpy as np
 from pydantic import BaseModel
 import time
 from utils.time_utils import TimeMesure
-
+from abc import ABC, abstractmethod
+from enum import StrEnum
 
 class ModelDetails(BaseModel):
     input_name: str
@@ -20,16 +21,7 @@ class ModelResponse(BaseModel):
     predictions: list[ModelPredictions]
     inference_time_ms: float
 
-
-class ModelLoader:
-    def __init__(self):
-        #The paths are hardcoded as relative paths for this example, but idialy they would be specified
-        # In a settings object
-        # Load ONNX model
-        self.ort_session = ort.InferenceSession("resnet50.onnx")
-        # Load labels
-        self.labels = self._load_labels(label_path="imagenet_classes.txt")
-
+class ModelLoader(ABC):
     # Load class labels from .txt file
     def _load_labels(self, label_path: str) -> list[str]:
         with open(label_path, "r") as f:
@@ -39,6 +31,26 @@ class ModelLoader:
     def _from_score_to_prob(self,predictions:np.array) -> np.array:
         exp = np.exp(predictions - np.max(predictions, axis=1, keepdims=True))
         return exp / np.sum(exp, axis=1, keepdims=True)
+
+    @abstractmethod
+    def get_model_details(self) -> ModelDetails:
+        pass
+
+    @abstractmethod
+    def run_prediction(self, input_data: np.array) -> ModelResponse:
+        pass
+
+class ModelLoaderTypes(StrEnum):
+    OnnxLoader = "onnxloader"
+
+class OnnxLoader(ModelLoader):
+    def __init__(self):
+        #The paths are hardcoded as relative paths for this example, but idialy they would be specified
+        # In a settings object
+        # Load ONNX model
+        self.ort_session = ort.InferenceSession("resnet50.onnx")
+        # Load labels
+        self.labels = self._load_labels(label_path="imagenet_classes.txt")
 
 
     def get_model_details(self) -> ModelDetails:
@@ -79,3 +91,11 @@ class ModelLoader:
             inference_time_ms = time_mes.elapsed_ms
         )
 
+def create_model_loader(model_loader_type:ModelLoaderTypes) -> ModelLoader:
+    model_loader_map = {
+        model_loader_type.OnnxLoader:OnnxLoader
+    }
+    try:
+        return model_loader_map[model_loader_type]()
+    except KeyError:
+        raise ValueError(f"Unsupported model loader: {model_loader_type}")

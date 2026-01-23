@@ -1,10 +1,10 @@
 from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.responses import JSONResponse
 from loaders.image_loader import ImgLoaderTypes, create_img_loader, ImageLoader
-from loaders.model_loader import ModelLoader, ModelResponse
+from loaders.model_loader import OnnxLoader, ModelResponse
 
 class InferenceAPI:
-    def __init__(self, app: FastAPI, model_loader: ModelLoader, image_loader:ImageLoader):
+    def __init__(self, app: FastAPI, model_loader: OnnxLoader, image_loader:ImageLoader):
         self.app = app
         self.model_loader = model_loader
         self.image_loader = image_loader
