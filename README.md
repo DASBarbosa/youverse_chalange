@@ -20,6 +20,7 @@ The packages that were manualy installed with pip were the following, the rest a
 - python-multipart: required to run the api
 - uvicorn: required to run the api
 - pytest: for running tests
+- httpx: required for TestClient to work
 
 ## Running the app
 
