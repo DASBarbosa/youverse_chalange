@@ -1,11 +1,13 @@
 from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.responses import JSONResponse
-from loaders.image_loader import ImgLoaderTypes, create_img_loader
+from loaders.image_loader import ImgLoaderTypes, create_img_loader, ImageLoader
 from loaders.model_loader import ModelLoader, ModelResponse
 
 class InferenceAPI:
-    def __init__(self, app: FastAPI):
+    def __init__(self, app: FastAPI, model_loader: ModelLoader, image_loader:ImageLoader):
         self.app = app
+        self.model_loader = model_loader
+        self.image_loader = image_loader
         self._register_routes()
 
     def _register_routes(self):
@@ -21,12 +23,8 @@ class InferenceAPI:
         image: UploadFile = File(...)
     ) -> ModelResponse:
         image_bytes = await image.read()
-
-        ocv_loader = create_img_loader(ImgLoaderTypes.OcvImageLoader)
-        img_normalized = ocv_loader.load_img_bytes(image_bytes=image_bytes, height=224, width=224)
-
-        model_loader = ModelLoader()
-        model_response = model_loader.run_prediction(input_data=img_normalized)
+        img_normalized = self.image_loader.load_img_bytes(image_bytes=image_bytes, height=224, width=224)
+        model_response = self.model_loader.run_prediction(input_data=img_normalized)
 
         topk_predict = model_response.predictions[:number_of_predictions]
         for prediction in topk_predict:
