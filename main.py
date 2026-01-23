@@ -8,9 +8,6 @@ app = FastAPI(title="Inference Service")
 # This means we can easily add more loaders without changing the api class signature
 # The make this more dinamic in a real enviornment, we could inject the string containing
 # the type of loader at deployment time as an env variable, then use that as imput for both factories
-image_loader = create_img_loader(ImgLoaderTypes.OcvImageLoader)
-model_loader = create_model_loader(model_loader_type=ModelLoaderTypes.OnnxLoader)
-
-# Injectcting the app, model_loader and image loader in the InferenceAPI class, 
-# allows us to instanciate both loaders at app initialization time
-InferenceAPI(app = app, model_loader = model_loader, image_loader= image_loader)
+img_loader_type = ImgLoaderTypes.OcvImageLoader
+model_loader_type = ModelLoaderTypes.OnnxLoader
+InferenceAPI(app = app, img_loader_type = img_loader_type, model_loader_type= model_loader_type)
