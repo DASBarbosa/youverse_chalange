@@ -34,12 +34,14 @@ class ImageLoader(ABC):
     ) -> np.array:
         img = input_data.astype(np.float32) / 255.0
 
-        # acording to this source, this seems to be the normalization expression that the resnet50 model expects:
-        # https://github.com/onnx/onnx-docker/blob/master/onnx-ecosystem/inference_demos/resnet50_modelzoo_onnxruntime_inference.ipynb
-
         # Reshape to match the shape format of the image, aka C,H,W
-        mean = np.array([0.485, 0.456, 0.406]).reshape(3, 1, 1)
-        std = np.array([0.229, 0.224, 0.225]).reshape(3, 1, 1)
+        # I have read that ONNX wants tensor(float) = np.float32
+        mean = np.array([0.485, 0.456, 0.406], dtype=np.float32).reshape(3, 1, 1)
+        std = np.array([0.229, 0.224, 0.225], dtype=np.float32).reshape(3, 1, 1)
+
+        # applying mean/std normlaization
+        img = (img - mean) / std
+
         # Reshape image data to add batch at the begining and set the H and W to 224
         return img.reshape(batch, channels, height, width)
 
