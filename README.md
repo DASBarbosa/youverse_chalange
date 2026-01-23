@@ -19,3 +19,18 @@ The packages that were manualy installed with pip were the following, the rest a
 - fastapi: The selected framework to build a puthon api
 - python-multipart: required to run the api
 - uvicorn: required to run the api
+
+## Running the app
+
+run the api locall on your terminal using:
+
+`
+uvicorn main:app --reload
+`
+
+test the infer endpoint or your terminal using:
+
+` curl -X 'POST' 'http://127.0.0.1:8000/infer' -H 'accept: application/json' -H 'Content-Type: multipart/form-data' -F 'number_of_predictions=your_num_of_predictions_here' -F 'image=@/absolute/path/to/img.png;type=image/png'
+`
+
+or using swagger at: http://127.0.0.1:8000/docs
