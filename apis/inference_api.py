@@ -8,8 +8,8 @@ class InferenceAPI:
     def __init__(
         self,
         app: FastAPI,
-        img_loader_type: ImgLoaderTypes,
-        model_loader_type: ModelLoaderTypes,
+        img_loader_type: ImgLoaderTypes | None,
+        model_loader_type: ModelLoaderTypes | None,
     ):
         self.app = app
         self._img_loader_type = img_loader_type
@@ -26,6 +26,10 @@ class InferenceAPI:
     def on_startup(self):
         # On startup will load the model and img loaders at startup tipe
         # if there is anything wrong with any of them, will set model_ready to false
+        if self._img_loader_type == None or self._model_loader_type == None:
+            self.model_ready = False
+            self.loading_error = "no loader for model or image was provided"
+            return
         try:
             self.image_loader = create_img_loader(loader_type=self._img_loader_type)
             self.model_loader = create_model_loader(
