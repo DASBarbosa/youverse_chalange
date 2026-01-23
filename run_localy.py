@@ -1,5 +1,5 @@
 from loaders.image_loader import create_img_loader, ImgLoaderTypes
-from loaders.model_loader import create_model_loader, ModelLoaderTypes
+from loaders.model_loader import create_model_loader, ModelLoaderTypes, ModelSettings
 from utils.stdin_loader import read_stdin
 
 if __name__ == "__main__":
@@ -11,7 +11,12 @@ if __name__ == "__main__":
     # is because we are not relient on hardcoded strings and can easily check
     # what types of loaders are available
     ocv_loader = create_img_loader(loader_type=ImgLoaderTypes.OcvImageLoader)
-    onnx_loader = create_model_loader(model_loader_type=ModelLoaderTypes.OnnxLoader)
+    onnx_loader = create_model_loader(
+        model_loader_type=ModelLoaderTypes.OnnxLoader,
+        model_settings=ModelSettings(
+            model_file_path="resnet50.onnx", labels_file_path="imagenet_classes.txt"
+        ),
+    )
 
     img_normalized = ocv_loader.load_local_img(img_path=img_path, height=224, width=224)
     model_response = onnx_loader.run_prediction(input_data=img_normalized)

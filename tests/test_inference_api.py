@@ -11,6 +11,7 @@ def mock_app() -> FastAPI:
         IMAGE_LOADER_TYPE = None,
         MODEL_LOADER_TYPE = None,
         MODEL_PATH = "",
+        LABELS_PATH = "",
         TOP_K = 1,
         NUM_THREADS = 1
     )
