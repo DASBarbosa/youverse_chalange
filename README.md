@@ -19,6 +19,7 @@ The packages that were manualy installed with pip were the following, the rest a
 - fastapi: The selected framework to build a puthon api
 - python-multipart: required to run the api
 - uvicorn: required to run the api
+- pytest: for running tests
 
 ## Running the app
 
