@@ -105,7 +105,18 @@ On the model loader, I used onnxruntime as requested. Altough I have not used mu
 
  This api does not require too much explanation, it has a event handler on start up that starts the image loader and the model loader, it also loads the model. Depending on the sucess of this initialization, it sets some health metrics that will be available on the /health endpoint.
 
- The /infer endpoint, receives an image in bytes, uses the image loader to conver it to a numpy array and passes it to model loader to infer the image. 
+ The /infer endpoint, receives an image in bytes, uses the image loader to conver it to a numpy array and passes it to model loader to infer the image. This is the only endpoint that uses async because it handles I/O tasks, mainly loading image bytes over a network call. async lets Python "pause" a function while it’s waiting on something and do other work instead. In this particular case what happens is:
+
+ - A request comes in
+ - FastAPI starts handling it
+ - It hits await image.read()
+ - While the image is being read from the client FastAPI pauses this request
+ - The event loop serves other requests
+ - When the read finishes, execution resumes
+
+ without async, one slow client uploading a big image could block api calls or cause latancy spikes.
+
+ On a kubernetes deployment fase this can be further improved with what we call replicas of the same micro service, improving redundancy and load balancing.
 
  There are two key choices in terms if libraries that I would like to highlight here.
  
@@ -119,3 +130,13 @@ On the model loader, I used onnxruntime as requested. Altough I have not used mu
 
  - A [stdin_loader.py](utils/stdin_loader.py) that has utils to deal with console input data, this was not really needed for the exercice, but it helped me in a first step while I was testing the onnx model without having an api built.
  - A [time_utils.py](utils/time_utils.py) that has a context manager to measure the time a task takes to execute. This was something requested on this exercice for mesuring the time the inference took. I thought about transforming this time measurement into a context manager because it would be easier to reuse in multiple places without the need to allways create new dedicated variables to measure time and always manually calculate the time enlapsed. Initially I was also thinking in using this to measure time with and without threads, but I ended up not having time to implement threads and run this expirement.
+
+## Future work
+Troughout this document there were already mentioned many ways on how this implementation could be better, but here is a breif summary of what already has been stated and maybe some more considerations:
+
+- Usages of multythreadng in I/O tasks, or tasks that make good use of the Global Interpreter Lock (GIL), such as the image processing tasks that use numpy, or the inference tasks.
+- Allow a different model to be loaded without restarting the service. In the current implementation the model is loaded when a instance of the model_loader class is instanciated. This turned out to be more of a architectural
+decision than I anticipated, meaning that I would have to change things in various places if the implementation to accomodate for this functionality. While these changes are not particular hard to do, I noticed this late in the implementation, which led me to not add this functionality for the sake of time.
+- Speaking of loading the model after the service has started, if this was the intent, maybe the use of env variables to specify the path to the module would not be the best approach, specially in a cloud enviornment were it would either require a redeployment to update those envs, or actually entering inside the service container and manualy do it. Maybe having an enum with all the possible models and allowing the user to choose which one to use on the request would be a possibility? or a dedicated service for serving the available models in the backend, with an interface for the developers to switch the current active model in case we don't really want to allow users of the api to decide that? This point is a bit tricky as it would requireme to actually learn more abot the companny usecases and how services are handled.
+- I'm not too familiar with the usage of this type of tools for image inference, but from what I have read, batch inference can help speed up the process when running these types of services using a GPU. If handled properly it would be much more efficient for a user to send multiple images rather then one by one.
+- Usage of MakeFiles for local setup. This is a personal preference, but on real projects, everything that requires setup to run locally, I like to create make targets to implement them. For example, in this scenario having a target were you could just call `make setup` and it would automatically create a venv for you and install all the python dependencies would be pretty helpfull.  
