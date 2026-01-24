@@ -103,8 +103,19 @@ On the model loader, I used onnxruntime as requested. Altough I have not used mu
  ### APIS
  I opted to create a wrapper arround the app for FastApi, I think this is cleaner and it helps keep track of dependencies, and above all, makes it easier to test the api itself, as we can easily mock and inject data on the wrapper. 
 
- This api does not require too much explanation, it has a even handler on start up that starts the image loader and the model loader, it also loads the model. Depending on the sucess of this initialization, it sets some health metrics that will be available on the /health endpoint.
+ This api does not require too much explanation, it has a event handler on start up that starts the image loader and the model loader, it also loads the model. Depending on the sucess of this initialization, it sets some health metrics that will be available on the /health endpoint.
 
  The /infer endpoint, receives an image in bytes, uses the image loader to conver it to a numpy array and passes it to model loader to infer the image. 
 
- There are two key choices that I would like to highlight here 
+ There are two key choices in terms if libraries that I would like to highlight here.
+ 
+ The use of pydantic BaseModels helps strongly type the data that's flowing in and out of the API, it works realy well with FastAPI, since BaseModels have built in json serialization and deserialization methods.
+
+ The use of pydantic BaseSettings helps to strongly type the settings data that are being injected on the API, on top of that, BaseSettings can automatically convert env variables into the class parameters.
+
+ ### Utils
+
+ This module was created to store some scripts that are generic enough that can be reused across other python modules. In this small project I just created 2 examples:
+
+ - A [stdin_loader.py](utils/stdin_loader.py) that has utils to deal with console input data, this was not really needed for the exercice, but it helped me in a first step while I was testing the onnx model without having an api built.
+ - A [time_utils.py](utils/time_utils.py) that has a context manager to measure the time a task takes to execute. This was something requested on this exercice for mesuring the time the inference took. I thought about transforming this time measurement into a context manager because it would be easier to reuse in multiple places without the need to allways create new dedicated variables to measure time and always manually calculate the time enlapsed. Initially I was also thinking in using this to measure time with and without threads, but I ended up not having time to implement threads and run this expirement.
